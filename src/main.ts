@@ -18,6 +18,7 @@ import {SetLevelRequestSchema} from '@modelcontextprotocol/sdk/types.js';
 import type {Channel} from './browser.js';
 import {ensureBrowserConnected, ensureBrowserLaunched} from './browser.js';
 import {parseArguments} from './cli.js';
+import {createHttpServer} from './httpServer.js';
 import {logger, saveLogsToFile} from './logger.js';
 import {McpContext} from './McpContext.js';
 import {McpResponse} from './McpResponse.js';
@@ -165,7 +166,21 @@ for (const tool of tools) {
   registerTool(tool as unknown as ToolDefinition);
 }
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
-logger('Chrome DevTools MCP Server connected');
+// Start the appropriate transport based on CLI arguments
+if (args.transport === 'http') {
+  logger(`Starting HTTP transport on ${args.httpHost}:${args.httpPort}${args.httpPath}`);
+  await createHttpServer(server, {
+    host: args.httpHost,
+    port: args.httpPort,
+    path: args.httpPath,
+    allowedOrigins: args.httpAllowedOrigins as string[] | undefined,
+    logger,
+  });
+  logger('Chrome DevTools MCP Server started with HTTP transport');
+} else {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  logger('Chrome DevTools MCP Server connected with stdio transport');
+}
+
 logDisclaimers();

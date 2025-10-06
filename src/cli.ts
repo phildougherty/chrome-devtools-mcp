@@ -85,6 +85,34 @@ export const cliOptions = {
     type: 'boolean',
     description: `If enabled, ignores errors relative to self-signed and expired certificates. Use with caution.`,
   },
+  transport: {
+    type: 'string',
+    description: 'Transport mechanism to use for MCP communication.',
+    choices: ['stdio', 'http'] as const,
+    default: 'stdio',
+  },
+  httpPort: {
+    type: 'number',
+    description: 'Port to listen on when using HTTP transport.',
+    default: 3000,
+  },
+  httpHost: {
+    type: 'string',
+    description:
+      'Host to bind to when using HTTP transport. Use 127.0.0.1 for localhost only (recommended for security).',
+    default: '127.0.0.1',
+  },
+  httpPath: {
+    type: 'string',
+    description: 'Path for the MCP endpoint when using HTTP transport.',
+    default: '/mcp',
+  },
+  httpAllowedOrigins: {
+    type: 'array',
+    description:
+      'Allowed origins for CORS and DNS rebinding protection when using HTTP transport. Required for security.',
+    string: true,
+  },
 } satisfies Record<string, YargsOptions>;
 
 export function parseArguments(version: string, argv = process.argv) {
@@ -113,6 +141,14 @@ export function parseArguments(version: string, argv = process.argv) {
       [
         '$0 --viewport 1280x720',
         'Launch Chrome with the initial viewport size of 1280x720px',
+      ],
+      [
+        '$0 --transport http --httpPort 3000',
+        'Use HTTP transport on port 3000',
+      ],
+      [
+        '$0 --transport http --httpAllowedOrigins http://localhost:3001',
+        'Use HTTP transport with allowed origin',
       ],
     ]);
 
